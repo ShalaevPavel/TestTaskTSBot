@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ShalaevPavel/TestTaskTSBot#readme",
   "dependencies": {
+    "dotenv": "^16.3.1",
     "pg": "^8.11.0",
     "telegraf": "^4.12.2"
   },

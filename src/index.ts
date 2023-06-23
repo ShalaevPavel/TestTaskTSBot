@@ -1,5 +1,6 @@
 import { Telegraf, Context } from 'telegraf';
 import { Client } from 'pg';
+require('dotenv').config();
 
 // Подключение к базе данных PostgreSQL
 const pgClient = new Client({
@@ -14,7 +15,7 @@ const pgClient = new Client({
 
 
 // Создание экземпляра бота Telegraf
-const bot = new Telegraf('5973636409:AAH46_rWxHYdZWtbReockDQma0hqDf5Yv1g');
+const bot = new Telegraf(process.env.BOT_TOKEN!.toString());
 
 
 
@@ -40,7 +41,7 @@ const bot = new Telegraf('5973636409:AAH46_rWxHYdZWtbReockDQma0hqDf5Yv1g');
 //     }
 // });
 async function handlePurchaseMessage(message: any) {
-    const chatId = '626266495'; // Замените на ID админского чата
+    const chatId: string = process.env.BOT_TOKEN!.toString(); // Замените на ID админского чата
 
     try {
         // const telegramMessage = JSON.parse(message.payload);
