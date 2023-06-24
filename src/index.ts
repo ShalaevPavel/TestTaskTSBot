@@ -1,41 +1,59 @@
-import { Telegraf, Context } from 'telegraf';
-import { Client } from 'pg';
+import {Telegraf, Context} from 'telegraf';
+import {Client} from 'pg';
+
+require('dotenv').config();
 
 // Подключение к базе данных PostgreSQL
 const pgClient = new Client({
     user: 'user1',
     host: 'localhost',
-    database: 'chat_ts',
+    database: 'tz_2',
+    // database: 'chat_ts',
     password: '12345678',
     port: 5432, // Порт PostgreSQL
 });
 
-pgClient.connect();
 
 // Создание экземпляра бота Telegraf
-const bot = new Telegraf('5973636409:AAH46_rWxHYdZWtbReockDQma0hqDf5Yv1g');
+const bot = new Telegraf(process.env.BOT_TOKEN!.toString());
 
-// Обработчик команды /start
-bot.start((ctx: Context) => {
-    ctx.reply('Привет! Я бот отслеживания покупок 69420.');
-});
+async function handlePurchaseMessage(message: any) {
+    const chatId: string = process.env.CHAT_ID!.toString(); // Замените на ID админского чата
 
-// Обработчик покупки
-bot.command('purchase', async (ctx: Context) => {
     try {
-        // Получение информации о покупке из базы данных
-        const result = await pgClient.query('SELECT * FROM purchases');
-        const purchases = result.rows;
+        if (message.payload) { // Добавлена проверка на пустое значение payload
+            // const telegramMessage = JSON.parse(message.payload);
+            const telegramMessage = message.payload;
+            await bot.telegram.sendMessage(chatId, telegramMessage);
+        } else {
+            bot.telegram.sendMessage(chatId, "payload is empty");
 
-        // Отправка информации о покупке в телеграм-бота
-        for (const purchase of purchases) {
-            ctx.reply(`Новая покупка: ${purchase.name}`);
-
+            console.log(69);
         }
     } catch (error) {
-        console.error('Ошибка при получении информации о покупке:', error);
+        console.error(error);
     }
+}
+
+
+pgClient.connect(async (err) => {
+    if (err) {
+        console.error('connection error', err.stack);
+        process.exit(-1);
+    }
+
+    console.log('connected');
+
+    // pgClient.query('LISTEN purchases_queue');
+    await pgClient.query('LISTEN purchases');
+    console.log("reached");
+
+    pgClient.on('notification', (notification) => {
+        console.log('Received notification:', notification);
+        handlePurchaseMessage(notification);
+    });
 });
+
 
 // Запуск бота
 bot.launch().then(() => {
@@ -43,3 +61,16 @@ bot.launch().then(() => {
 }).catch((error) => {
     console.error('Ошибка при запуске бота:', error);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
