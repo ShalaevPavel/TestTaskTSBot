@@ -1,5 +1,6 @@
-import { Telegraf, Context } from 'telegraf';
-import { Client } from 'pg';
+import {Telegraf, Context} from 'telegraf';
+import {Client} from 'pg';
+
 require('dotenv').config();
 
 // Подключение к базе данных PostgreSQL
@@ -13,42 +14,20 @@ const pgClient = new Client({
 });
 
 
-
 // Создание экземпляра бота Telegraf
 const bot = new Telegraf(process.env.BOT_TOKEN!.toString());
 
-
-
-// Обработчик команды /start
-// bot.start((ctx: Context) => {
-//     ctx.reply('Питер - интернетная помойка');
-// });
-
-// Обработчик покупки
-// bot.command('purchase', async (ctx: Context) => {
-//     try {
-//         // Получение информации о покупке из базы данных
-//         const result = await pgClient.query('SELECT * FROM purchases');
-//         const purchases = result.rows;
-//
-//         // Отправка информации о покупке в телеграм-бота
-//         for (const purchase of purchases) {
-//             ctx.reply(`Новая покупка: ${purchase.name} bought for ${purchase.price}`);
-//
-//         }
-//     } catch (error) {
-//         console.error('Ошибка при получении информации о покупке:', error);
-//     }
-// });
 async function handlePurchaseMessage(message: any) {
-    const chatId: string = process.env.BOT_TOKEN!.toString(); // Замените на ID админского чата
+    const chatId: string = process.env.CHAT_ID!.toString(); // Замените на ID админского чата
 
     try {
         if (message.payload) { // Добавлена проверка на пустое значение payload
-            const telegramMessage = JSON.parse(message.payload);
+            // const telegramMessage = JSON.parse(message.payload);
+            const telegramMessage = message.payload;
             await bot.telegram.sendMessage(chatId, telegramMessage);
-        }
-        else {
+        } else {
+            bot.telegram.sendMessage(chatId, "payload is empty");
+
             console.log(69);
         }
     } catch (error) {
@@ -56,15 +35,8 @@ async function handlePurchaseMessage(message: any) {
     }
 }
 
-// pgClient.on('notification', (notification) => {
-//     console.log('Received notification:', notification);
-//     handlePurchaseMessage(notification);
-//     // const purchaseName = notification.payload;
-//     // console.log(purchaseName);
-//     // bot.telegram.sendMessage('626266495', `Новая покупка: ${purchaseName}`);
-// });
 
-pgClient.connect((err) => {
+pgClient.connect(async (err) => {
     if (err) {
         console.error('connection error', err.stack);
         process.exit(-1);
@@ -73,14 +45,11 @@ pgClient.connect((err) => {
     console.log('connected');
 
     // pgClient.query('LISTEN purchases_queue');
-    pgClient.query('LISTEN purchases');
+    await pgClient.query('LISTEN purchases');
     console.log("reached");
 
     pgClient.on('notification', (notification) => {
         console.log('Received notification:', notification);
-        console.log(notification.payload);
-        // bot.telegram.sendMessage('626266495', notification.toString());
-        bot.telegram.sendMessage('626266495', "Привет, Мама");
         handlePurchaseMessage(notification);
     });
 });
