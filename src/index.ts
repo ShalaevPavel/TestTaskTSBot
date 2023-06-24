@@ -44,10 +44,13 @@ async function handlePurchaseMessage(message: any) {
     const chatId: string = process.env.BOT_TOKEN!.toString(); // Замените на ID админского чата
 
     try {
-        // const telegramMessage = JSON.parse(message.payload);
-        const telegramMessage: string = message.leangth;
-        await bot.telegram.sendMessage(chatId, telegramMessage);
-        await bot.telegram.sendMessage(chatId, "13224224");
+        if (message.payload) { // Добавлена проверка на пустое значение payload
+            const telegramMessage = JSON.parse(message.payload);
+            await bot.telegram.sendMessage(chatId, telegramMessage);
+        }
+        else {
+            console.log(69);
+        }
     } catch (error) {
         console.error(error);
     }
@@ -69,12 +72,15 @@ pgClient.connect((err) => {
 
     console.log('connected');
 
-    pgClient.query('LISTEN purchases_queue');
+    // pgClient.query('LISTEN purchases_queue');
+    pgClient.query('LISTEN purchases');
+    console.log("reached");
 
     pgClient.on('notification', (notification) => {
         console.log('Received notification:', notification);
         console.log(notification.payload);
-        bot.telegram.sendMessage('626266495', notification.toString());
+        // bot.telegram.sendMessage('626266495', notification.toString());
+        bot.telegram.sendMessage('626266495', "Привет, Мама");
         handlePurchaseMessage(notification);
     });
 });
