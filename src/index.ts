@@ -1,7 +1,8 @@
 import {Telegraf, Context} from 'telegraf';
 import {Client} from 'pg';
+import {config} from "dotenv";
 
-require('dotenv').config();
+config();
 
 // Подключение к базе данных PostgreSQL
 const pgClient = new Client({
